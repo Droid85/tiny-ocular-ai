@@ -1,8 +1,16 @@
 version: '3.8'
+
 services:
-  app:
-    build: .
+  backend:
+    build:
+      context: ./backend
     ports:
-      - "4000:5000"
-    environment:
-      - NODE_ENV=development
+      - "5000:5000"
+
+  frontend:
+    build:
+      context: ./frontend/tinyocularai-app
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
