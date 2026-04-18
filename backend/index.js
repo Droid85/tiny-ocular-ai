@@ -122,11 +122,11 @@ app.delete('/api/photos/:id', async (req, res) => {
     });
 
     if (deleted) {
-      io.emit('delete_photo', id); 
-      return res.json({ success: true, message: 'Запись удалена' });
+      io.emit('delete_photo', id);
+      return res.json({ success: true, message: 'Data deleted' });
     }
     
-    res.status(404).json({ success: false, message: 'Запись не найдена' });
+    res.status(404).json({ success: false, message: 'Data not found' });
   } catch (e) {
     console.error(e);
     res.status(500).json({ success: false, error: e.message });
