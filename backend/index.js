@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const multer = require('multer');
 const { PrismaClient } = require('@prisma/client');
+const config = require('./prisma.config.js');
 const http = require('http');
 const { Server } = require('socket.io');
 
@@ -14,7 +15,7 @@ const io = new Server(server, {
 });
 
 const PORT = 5000;
-const prisma = new PrismaClient();
+const prisma = new PrismaClient(config);
 const upload = multer();
 
 const buildPath = path.join(__dirname, '..', 'frontend', 'tinyocularai-app', 'dist');
