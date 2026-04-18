@@ -22,8 +22,13 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://204.168.245.104:3000",
-    methods: ["GET", "POST"]
+    origin: [
+      "http://204.168.245.104", 
+      "http://204.168.245.104:3000",
+      "http://localhost:3000"
+    ],
+    methods: ["GET", "POST"],
+    credentials: true
    }
 });
 
@@ -32,7 +37,13 @@ const upload = multer();
 
 // const buildPath = path.join(__dirname, '..', 'frontend', 'tinyocularai-app', 'dist');
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    "http://204.168.245.104", 
+    "http://204.168.245.104:3000",
+    "http://localhost:3000"
+  ]
+}));
 
 // app.use(express.static(buildPath));
 
