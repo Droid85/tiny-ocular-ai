@@ -35,7 +35,7 @@ let socket: Socket | null = null;
 
 const fetchInitialPhotos = async () => {
   try {
-    const response = await fetch('http://204.168.245.104:5000');
+    const response = await fetch('http://204.168.245.104:5000/api/photos');
     photos.value = await response.json();
   } catch (err) {
     console.error("Load data error: ", err);

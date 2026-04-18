@@ -42,7 +42,9 @@ app.use(cors({
     "http://204.168.245.104", 
     "http://204.168.245.104:3000",
     "http://localhost:3000"
-  ]
+  ],
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type']
 }));
 
 // app.use(express.static(buildPath));
@@ -112,9 +114,9 @@ app.get('/photo/:id', async (req, res) => {
   }
 });
 
-// app.use((req, res) => {
-//   res.sendFile(path.resolve(buildPath, 'index.html'));
-// });
+app.get('/', (req, res) => {
+  res.json({ status: 'API is running', version: '1.0.0' });
+});
 
 const start = async () => {
   try {
