@@ -30,11 +30,11 @@ const io = new Server(server, {
 const PORT = 5000;
 const upload = multer();
 
-const buildPath = path.join(__dirname, '..', 'frontend', 'tinyocularai-app', 'dist');
+// const buildPath = path.join(__dirname, '..', 'frontend', 'tinyocularai-app', 'dist');
 
 app.use(cors());
 
-app.use(express.static(buildPath));
+// app.use(express.static(buildPath));
 
 app.get('/api/photos', async (req, res) => {
   try {
@@ -101,9 +101,9 @@ app.get('/photo/:id', async (req, res) => {
   }
 });
 
-app.use((req, res) => {
-  res.sendFile(path.resolve(buildPath, 'index.html'));
-});
+// app.use((req, res) => {
+//   res.sendFile(path.resolve(buildPath, 'index.html'));
+// });
 
 const start = async () => {
   try {
