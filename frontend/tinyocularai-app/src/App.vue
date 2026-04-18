@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <h1>Мониторинг ESP32-CAM</h1>
+    <h1>ESP32-CAM Statistics data</h1>
     <div class="gallery">
       <div v-for="photo in photos" :key="photo.id" class="photo-card">
         <div class="image-wrapper">
