@@ -4,7 +4,7 @@
     <div class="gallery">
       <div v-for="photo in photos" :key="photo.id" class="photo-card">
         <div class="image-wrapper">
-          <img :src="`/photo/${photo.photo}`" :alt="photo.camName" loading="lazy">
+          <img :src="`http://204.168.245.104:5000/photo/${photo.photo}`" :alt="photo.camName" loading="lazy">
         </div>
         <div class="info">
           <span class="cam-name">{{ photo.camName }}</span>
