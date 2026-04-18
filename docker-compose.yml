@@ -1,16 +1,36 @@
-version: '3.8'
-
 services:
-  backend:
-    build:
-      context: ./backend
-    ports:
-      - "5000:5000"
-
   frontend:
     build:
       context: ./frontend/tinyocularai-app
     ports:
       - "3000:80"
+    restart: always
+
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "5000:5000"
+    restart: always
+    environment:
+      # - DB_HOST=db
+      # - DB_PORT=5432
+      # - DB_NAME=tiny_ocular_db
+      # - DB_USER=admin_user
+      # - DB_PASSWORD=user_password
+      - DATABASE_URL=postgresql://admin_user:user_password@db:5432/tiny_ocular_db
     depends_on:
-      - backend
+      - db
+
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      - POSTGRES_DB=tiny_ocular_db
+      - POSTGRES_USER=admin_user
+      - POSTGRES_PASSWORD=user_password
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:
