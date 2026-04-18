@@ -94,7 +94,7 @@ app.get('/photo/:id', async (req, res) => {
   }
 });
 
-app.get('*', (req, res) => {
+app.get('/:path*', (req, res) => {
   res.sendFile(path.resolve(buildPath, 'index.html'));
 });
 
