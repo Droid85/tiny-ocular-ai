@@ -35,20 +35,20 @@ let socket: Socket | null = null;
 
 const fetchInitialPhotos = async () => {
   try {
-    const response = await fetch('/api/photos');
+    const response = await fetch('http://204.168.245.104:5000');
     photos.value = await response.json();
   } catch (err) {
-    console.error("Ошибка загрузки данных:", err);
+    console.error("Load data error: ", err);
   }
 };
 
 onMounted(() => {
   fetchInitialPhotos();
 
-  socket = io(); 
+  socket = io('http://204.168.245.104:5000'); 
 
   socket.on('new-photo', (data: Photo) => {
-    console.log('Новое событие:', data);
+    console.log('New event: ', data);
     photos.value.unshift(data);
     
     if (photos.value.length > 50) {

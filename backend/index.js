@@ -4,6 +4,7 @@ const multer = require('multer');
 const http = require('http');
 const { Server } = require('socket.io');
 const { Sequelize, DataTypes } = require('sequelize');
+const cors = require('cors');
 
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialect: 'postgres',
@@ -20,13 +21,19 @@ const Photo = sequelize.define('Photo', {
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: "*" }
+  cors: {
+    origin: "http://204.168.245.104:3000",
+    methods: ["GET", "POST"]
+   }
 });
 
 const PORT = 5000;
 const upload = multer();
 
 const buildPath = path.join(__dirname, '..', 'frontend', 'tinyocularai-app', 'dist');
+
+app.use(cors());
+
 app.use(express.static(buildPath));
 
 app.get('/api/photos', async (req, res) => {
@@ -102,11 +109,12 @@ const start = async () => {
   try {
     await sequelize.authenticate();
     await sequelize.sync();
+    
     server.listen(PORT, () => {
       console.log(`🚀 Server ready on http://localhost:${PORT}`);
     });
   } catch (e) {
-    console.error('❌ Failed to start server:', e);
+    console.error('Failed to start server:', e);
   }
 };
 
