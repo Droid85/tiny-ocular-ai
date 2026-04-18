@@ -1,74 +1,88 @@
 const express = require('express');
 const path = require('path');
 const multer = require('multer');
-const { PrismaClient } = require('@prisma/client');
-const config = require('./prisma.config.js');
 const http = require('http');
 const { Server } = require('socket.io');
+const { Sequelize, DataTypes } = require('sequelize');
+
+const sequelize = new Sequelize(process.env.DATABASE_URL, {
+  dialect: 'postgres',
+  logging: false,
+});
+
+const Photo = sequelize.define('Photo', {
+  camName: { type: DataTypes.STRING, allowNull: false },
+  photo: { type: DataTypes.BLOB, allowNull: false },
+  modelData: { type: DataTypes.JSONB, allowNull: true },
+  type: { type: DataTypes.STRING, allowNull: true },
+});
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: {
-    origin: "*",
-  }
+  cors: { origin: "*" }
 });
 
 const PORT = 5000;
-const prisma = new PrismaClient(config);
 const upload = multer();
 
 const buildPath = path.join(__dirname, '..', 'frontend', 'tinyocularai-app', 'dist');
 app.use(express.static(buildPath));
 
 app.get('/api/photos', async (req, res) => {
-  const photos = await prisma.photo.findMany({
-    orderBy: { date: 'desc' },
-    take: 50
-  });
-  
-  const lightPhotos = photos.map(p => ({ ...p, photo: p.id }));
-  res.json(lightPhotos);
+  try {
+    const photos = await Photo.findAll({
+      order: [['createdAt', 'DESC']],
+      limit: 50,
+      attributes: ['id', 'camName', 'type', 'modelData', 'createdAt']
+    });
+
+    const result = photos.map(p => ({
+      ...p.toJSON(),
+      photo: p.id,
+      date: p.createdAt
+    }));
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.post('/upload', upload.single('photo'), async (req, res) => {
   try {
+    if (!req.file) return res.status(400).send('No file uploaded');
+
     const { camName, modelData, type } = req.body;
     
-    const savedPhoto = await prisma.photo.create({
-      data: {
-        camName,
-        type,
-        photo: req.file.buffer,
-        modelData: typeof modelData === 'string' ? JSON.parse(modelData) : modelData,
-      }
+    const savedPhoto = await Photo.create({
+      camName: camName || 'Unknown Cam',
+      type: type || 'default',
+      photo: req.file.buffer,
+      modelData: typeof modelData === 'string' ? JSON.parse(modelData) : modelData,
     });
 
     res.status(200).json({ success: true, id: savedPhoto.id });
 
     io.emit('new-photo', {
-        id: savedPhoto.id,
-        camName: savedPhoto.camName,
-        type: savedPhoto.type,
-        date: savedPhoto.date,
-        modelData: savedPhoto.modelData,
-        photo: savedPhoto.id
+      id: savedPhoto.id,
+      camName: savedPhoto.camName,
+      type: savedPhoto.type,
+      date: savedPhoto.createdAt,
+      modelData: savedPhoto.modelData,
+      photo: savedPhoto.id
     });
 
   } catch (error) {
-    console.error('Load error: ', error);
+    console.error('Upload Error:', error);
     if (!res.headersSent) {
-        res.status(500).send('Saving error!');
+      res.status(500).send('Database saving error');
     }
   }
 });
 
 app.get('/photo/:id', async (req, res) => {
   try {
-    const photo = await prisma.photo.findUnique({
-      where: { id: parseInt(req.params.id) }
-    });
-
+    const photo = await Photo.findByPk(req.params.id);
     if (photo && photo.photo) {
       res.contentType('image/jpeg');
       res.send(photo.photo);
@@ -76,7 +90,7 @@ app.get('/photo/:id', async (req, res) => {
       res.status(404).send('Not found');
     }
   } catch (e) {
-    res.status(500).send('Error');
+    res.status(500).send('Server error');
   }
 });
 
@@ -84,6 +98,16 @@ app.get('*', (req, res) => {
   res.sendFile(path.resolve(buildPath, 'index.html'));
 });
 
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+const start = async () => {
+  try {
+    await sequelize.authenticate();
+    await sequelize.sync();
+    server.listen(PORT, () => {
+      console.log(`🚀 Server ready on http://localhost:${PORT}`);
+    });
+  } catch (e) {
+    console.error('❌ Failed to start server:', e);
+  }
+};
+
+start();
