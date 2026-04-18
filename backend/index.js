@@ -114,6 +114,25 @@ app.get('/photo/:id', async (req, res) => {
   }
 });
 
+app.delete('/api/photos/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const deleted = await Photo.destroy({
+      where: { id: id }
+    });
+
+    if (deleted) {
+      io.emit('delete_photo', id); 
+      return res.json({ success: true, message: 'Запись удалена' });
+    }
+    
+    res.status(404).json({ success: false, message: 'Запись не найдена' });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
 app.get('/', (req, res) => {
   res.json({ status: 'API is running', version: '1.0.0' });
 });
